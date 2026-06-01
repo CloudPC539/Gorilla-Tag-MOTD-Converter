@@ -3,150 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gorilla Tag MOTD Maker</title>
+    <title>Gorilla Tag MOTD Converter</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+        :root {
+            --bg-main: #0a0a12;
+            --bg-card: #121222;
+            --bg-input: #05050a;
+            --border-color: #262646;
+            --text-main: #c3c7db;
+            --neon-cyan: #00f0ff;
+            --neon-pink: #ff007f;
+            --neon-purple: #9d4edd;
+        }
+
         body {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #1e1e2e;
-            color: #cdd6f4;
-            padding: 20px;
-            max-width: 800px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 40px 20px;
+            max-width: 850px;
             margin: 0 auto;
+            /* Pixelated checkerboard/dot pattern background */
+            background-image: 
+                linear-gradient(45deg, #0d0d1a 25%, transparent 25%, transparent 75%, #0d0d1a 75%, #0d0d1a), 
+                linear-gradient(45deg, #0d0d1a 25%, transparent 25%, transparent 75%, #0d0d1a 75%, #0d0d1a);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
+
         h1 {
-            color: #f5c2e7;
+            font-family: 'Press Start 2P', cursive;
+            color: #ffffff;
             text-align: center;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            /* Hard blocky shadow instead of blurry glow */
+            text-shadow: 4px 4px 0px var(--neon-cyan), 8px 8px 0px var(--neon-purple);
+            margin-bottom: 40px;
         }
+
+        h1 span {
+            color: var(--neon-pink);
+        }
+
         .container {
-            background-color: #313244;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background-color: var(--bg-card);
+            padding: 30px;
+            border: 4px solid var(--border-color);
+            /* Hard offset shadow for depth */
+            box-shadow: 12px 12px 0px #000000;
         }
+
         .label-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            margin-top: 15px;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 8px;
         }
+
         label {
-            font-weight: bold;
-            color: #a6adc8;
+            font-family: 'Press Start 2P', cursive;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            font-size: 10px;
+            text-shadow: 2px 2px 0px #000;
         }
+
         .insert-btn {
-            background-color: #f5c2e7;
-            color: #11111b;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+            background-color: #000;
+            color: var(--neon-pink);
+            border: 2px solid var(--neon-pink);
+            padding: 8px 14px;
+            font-family: 'Press Start 2P', cursive;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 10px;
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0px var(--neon-pink);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
-        .insert-btn:hover {
-            background-color: #cba6f7;
+
+        .insert-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--neon-pink);
         }
+
         textarea, input[type="text"] {
             width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            background-color: #181825;
-            color: #cdd6f4;
-            border: 1px solid #45475a;
-            border-radius: 5px;
+            padding: 12px;
+            background-color: var(--bg-input);
+            color: #ffffff;
+            border: 2px solid var(--border-color);
             box-sizing: border-box;
+            font-family: 'VT323', monospace;
+            font-size: 22px;
+            transition: border-color 0.2s;
         }
+
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 4px 4px 0px var(--neon-cyan);
+        }
+
         textarea {
             resize: vertical;
-            height: 100px;
+            height: 110px;
+            letter-spacing: 2px;
         }
+
         #lines-container {
-            margin-top: 15px;
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
         }
+
         .line-config {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 10px;
-            background: #45475a;
+            background: #000;
             padding: 10px;
-            border-radius: 5px;
+            border: 2px solid var(--border-color);
+            box-shadow: 4px 4px 0px #000;
         }
+
         .line-config span {
             flex-shrink: 0;
-            font-weight: bold;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            color: #888da8;
         }
+
         .line-config input[type="color"] {
-            border: none;
-            width: 40px;
-            height: 30px;
+            border: 2px solid #fff;
+            width: 32px;
+            height: 32px;
             cursor: pointer;
             background: none;
+            padding: 0;
         }
+
+        .line-config input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .line-config input[type="color"]::-webkit-color-swatch {
+            border: none;
+        }
+
         .line-config input[type="text"] {
             margin-top: 0;
-            width: 100px;
+            padding: 6px;
             text-align: center;
+            font-size: 20px;
+            border: 2px solid var(--border-color);
+            box-shadow: inset 2px 2px 0px #000;
         }
+
         .preview-box {
-            margin-top: 20px;
+            margin-top: 30px;
             background-color: #000000;
-            padding: 15px;
-            border-radius: 5px;
-            border: 2px solid #45475a;
-            font-family: sans-serif;
-            font-weight: bold;
-            min-height: 50px;
-            line-height: 1.5;
+            padding: 20px;
+            border: 4px solid #333;
+            font-family: 'VT323', monospace;
+            font-size: 26px;
+            min-height: 60px;
+            line-height: 1.2;
+            letter-spacing: 2px;
+            box-shadow: inset 4px 4px 0px #111;
         }
+
         .preview-box::before {
-            content: "LIVE PREVIEW:";
+            content: "[ LIVE_PREVIEW ]";
             display: block;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #a6adc8;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #313244;
-            padding-bottom: 3px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: #555870;
+            margin-bottom: 16px;
+            border-bottom: 2px dashed #1a1a26;
+            padding-bottom: 8px;
+            letter-spacing: 1px;
         }
+
         .output-box {
-            margin-top: 20px;
-            background-color: #11111b;
-            padding: 15px;
-            border-radius: 5px;
-            border: 1px dashed #f38ba8;
+            margin-top: 30px;
+            background-color: #05050a;
+            padding: 20px;
+            border: 2px dashed var(--neon-cyan);
             word-break: break-all;
             user-select: all;
             cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 22px;
+            color: #e0e0e0;
+            box-shadow: 4px 4px 0px rgba(0, 240, 255, 0.2);
+            transition: all 0.1s;
         }
+
+        .output-box:hover {
+            background-color: #090914;
+            border-style: solid;
+            box-shadow: 6px 6px 0px var(--neon-cyan);
+            transform: translate(-2px, -2px);
+        }
+
+        .output-box:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--neon-cyan);
+        }
+
         .output-box::before {
-            content: "Click to copy code string:";
+            content: ">> CLICK_TO_COPY_STRING";
             display: block;
-            font-size: 12px;
-            color: #f38ba8;
-            margin-bottom: 5px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            color: var(--neon-cyan);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <h1>GT MOTD Converter</h1>
+    <h1>GT MOTD <br><span>Converter</span></h1>
 
     <div class="container">
         <div class="label-row">
-            <label for="raw-text">Enter MOTD Text:</label>
+            <label for="raw-text">// Input raw text</label>
             <button class="insert-btn" onclick="insertNewLine()">+ Insert \n</button>
         </div>
         <textarea id="raw-text" placeholder="Line One\nLine Two\nLine Three">HELLO\nWELCOME TO MY ROOM\nENJOY</textarea>
 
-        <div id="lines-container">
-            </div>
+        <div id="lines-container"></div>
 
         <div class="preview-box" id="live-preview"></div>
 
-        <div class="output-box" id="output" onclick="copyToClipboard()">
-            </div>
+        <div class="output-box" id="output" onclick="copyToClipboard()"></div>
     </div>
 
     <script>
@@ -155,29 +253,24 @@
         const livePreview = document.getElementById('live-preview');
         const outputBox = document.getElementById('output');
 
-        // Track colors by index so they persist while typing text
-        let savedColors = ['#FF0000', '#00FF00', '#0000FF'];
+        let savedColors = ['#FF007F', '#00F0FF', '#9D4EDD', '#00FF66', '#FFB703'];
 
         rawTextInput.addEventListener('input', () => {
             updateLinePickers();
             generateMOTD();
         });
 
-        // Function to insert \n at the current cursor position
         function insertNewLine() {
             const startPos = rawTextInput.selectionStart;
             const endPos = rawTextInput.selectionEnd;
             const text = rawTextInput.value;
 
-            // Insert \n split by cursor position
             rawTextInput.value = text.substring(0, startPos) + '\\n' + text.substring(endPos, text.length);
 
-            // Return cursor focus to the text area right after the inserted \n
             rawTextInput.focus();
             rawTextInput.selectionStart = startPos + 2;
             rawTextInput.selectionEnd = startPos + 2;
 
-            // Trigger updates manually since setting .value programmatically doesn't fire 'input' event
             updateLinePickers();
             generateMOTD();
         }
@@ -197,7 +290,7 @@
                 const div = document.createElement('div');
                 div.className = 'line-config';
                 div.innerHTML = `
-                    <span>Line ${index + 1}:</span>
+                    <span>LN ${String(index + 1).padStart(2, '0')}:</span>
                     <input type="color" id="picker-${index}" value="${currentColor}" oninput="updateColor(${index}, this.value, 'picker')">
                     <input type="text" id="hex-${index}" class="line-color-hex" value="${currentColor.toUpperCase()}" maxlength="7" oninput="updateColor(${index}, this.value, 'text')">
                 `;
@@ -242,7 +335,19 @@
             if (!textToCopy) return;
 
             navigator.clipboard.writeText(textToCopy).then(() => {
-                alert('Copied to clipboard!');
+                // Flash hard pixel effect on successful copy
+                const originalBg = outputBox.style.backgroundColor;
+                const originalBorder = outputBox.style.borderColor;
+                
+                outputBox.style.backgroundColor = '#1a000d';
+                outputBox.style.borderColor = 'var(--neon-pink)';
+                outputBox.style.boxShadow = '6px 6px 0px var(--neon-pink)';
+                
+                setTimeout(() => {
+                    outputBox.style.backgroundColor = originalBg;
+                    outputBox.style.borderColor = originalBorder;
+                    outputBox.style.boxShadow = '';
+                }, 150);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
             });
