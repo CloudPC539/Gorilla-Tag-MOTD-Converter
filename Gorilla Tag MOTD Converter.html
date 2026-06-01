@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gorilla Tag MOTD Converter</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #f5c2e7;
+            text-align: center;
+        }
+        .container {
+            background-color: #313244;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #a6adc8;
+        }
+        .insert-btn {
+            background-color: #f5c2e7;
+            color: #11111b;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .insert-btn:hover {
+            background-color: #cba6f7;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background-color: #181825;
+            color: #cdd6f4;
+            border: 1px solid #45475a;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        #lines-container {
+            margin-top: 15px;
+        }
+        .line-config {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            background: #45475a;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .line-config span {
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+        .line-config input[type="color"] {
+            border: none;
+            width: 40px;
+            height: 30px;
+            cursor: pointer;
+            background: none;
+        }
+        .line-config input[type="text"] {
+            margin-top: 0;
+            width: 100px;
+            text-align: center;
+        }
+        .preview-box {
+            margin-top: 20px;
+            background-color: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            border: 2px solid #45475a;
+            font-family: sans-serif;
+            font-weight: bold;
+            min-height: 50px;
+            line-height: 1.5;
+        }
+        .preview-box::before {
+            content: "LIVE PREVIEW:";
+            display: block;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #a6adc8;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #313244;
+            padding-bottom: 3px;
+        }
+        .output-box {
+            margin-top: 20px;
+            background-color: #11111b;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px dashed #f38ba8;
+            word-break: break-all;
+            user-select: all;
+            cursor: pointer;
+        }
+        .output-box::before {
+            content: "Click to copy code string:";
+            display: block;
+            font-size: 12px;
+            color: #f38ba8;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>GT MOTD Converter</h1>
+
+    <div class="container">
+        <div class="label-row">
+            <label for="raw-text">Enter MOTD Text:</label>
+            <button class="insert-btn" onclick="insertNewLine()">+ Insert \n</button>
+        </div>
+        <textarea id="raw-text" placeholder="Line One\nLine Two\nLine Three">HELLO\nWELCOME TO MY ROOM\nENJOY</textarea>
+
+        <div id="lines-container">
+            </div>
+
+        <div class="preview-box" id="live-preview"></div>
+
+        <div class="output-box" id="output" onclick="copyToClipboard()">
+            </div>
+    </div>
+
+    <script>
+        const rawTextInput = document.getElementById('raw-text');
+        const linesContainer = document.getElementById('lines-container');
+        const livePreview = document.getElementById('live-preview');
+        const outputBox = document.getElementById('output');
+
+        // Track colors by index so they persist while typing text
+        let savedColors = ['#FF0000', '#00FF00', '#0000FF'];
+
+        rawTextInput.addEventListener('input', () => {
+            updateLinePickers();
+            generateMOTD();
+        });
+
+        // Function to insert \n at the current cursor position
+        function insertNewLine() {
+            const startPos = rawTextInput.selectionStart;
+            const endPos = rawTextInput.selectionEnd;
+            const text = rawTextInput.value;
+
+            // Insert \n split by cursor position
+            rawTextInput.value = text.substring(0, startPos) + '\\n' + text.substring(endPos, text.length);
+
+            // Return cursor focus to the text area right after the inserted \n
+            rawTextInput.focus();
+            rawTextInput.selectionStart = startPos + 2;
+            rawTextInput.selectionEnd = startPos + 2;
+
+            // Trigger updates manually since setting .value programmatically doesn't fire 'input' event
+            updateLinePickers();
+            generateMOTD();
+        }
+
+        function updateLinePickers() {
+            const text = rawTextInput.value;
+            const lines = text.split('\\n');
+            
+            linesContainer.innerHTML = '';
+
+            lines.forEach((line, index) => {
+                if (!savedColors[index]) {
+                    savedColors[index] = '#FFFFFF';
+                }
+                const currentColor = savedColors[index];
+
+                const div = document.createElement('div');
+                div.className = 'line-config';
+                div.innerHTML = `
+                    <span>Line ${index + 1}:</span>
+                    <input type="color" id="picker-${index}" value="${currentColor}" oninput="updateColor(${index}, this.value, 'picker')">
+                    <input type="text" id="hex-${index}" class="line-color-hex" value="${currentColor.toUpperCase()}" maxlength="7" oninput="updateColor(${index}, this.value, 'text')">
+                `;
+                linesContainer.appendChild(div);
+            });
+        }
+
+        function updateColor(index, value, source) {
+            if (source === 'text') {
+                if (!value.startsWith('#')) value = '#' + value;
+                if (value.length !== 7) return; 
+                document.getElementById(`picker-${index}`).value = value;
+            } else {
+                document.getElementById(`hex-${index}`).value = value.toUpperCase();
+            }
+            
+            savedColors[index] = value.toUpperCase();
+            generateMOTD();
+        }
+
+        function generateMOTD() {
+            const text = rawTextInput.value;
+            const lines = text.split('\\n');
+            
+            let finalArray = [];
+            let previewHTML = '';
+
+            lines.forEach((line, index) => {
+                const hex = savedColors[index] || '#FFFFFF';
+                const cleanText = line.toUpperCase();
+
+                finalArray.push(`<color=${hex}>${cleanText}</color>`);
+                previewHTML += `<div style="color: ${hex}">${cleanText || '&nbsp;'}</div>`;
+            });
+
+            outputBox.innerText = finalArray.join('\\n');
+            livePreview.innerHTML = previewHTML;
+        }
+
+        function copyToClipboard() {
+            const textToCopy = outputBox.innerText;
+            if (!textToCopy) return;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Run on initial page load
+        updateLinePickers();
+        generateMOTD();
+    </script>
+</body>
+</html>
